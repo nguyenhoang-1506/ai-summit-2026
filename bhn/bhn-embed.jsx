@@ -13,14 +13,16 @@
   // Khung hình của hiệu ứng là ưu tiên thấp: một cú bấm next/back luôn được xử lý ngay, không phải chờ hiệu ứng chạy xong
   const lowPri = (fn) => (React.startTransition ? React.startTransition(fn) : fn());
   // Deck dùng 25 scene đầu (bỏ scene cuối "Câu chốt")
-  window.BanHangNganScenes = D.secs.slice(0, 25).map(s => s.name);
+  // Bỏ scene 23 "Kho còn 1 · Copilot" (slide 29 cũ)
+  const MAP = [...Array(25).keys()].filter(i => i !== 23);
+  window.BanHangNganScenes = MAP.map(i => D.secs[i].name);
   function BanHangNganEmbed({ idx = 0, showCaptions = true, speed = 1 }) {
     const d = D, N = window.BanHangNganScenes.length, i0 = Math.min(Math.max(+idx || 0, 0), N - 1);
-    const [st, setSt] = React.useState(() => ({ idx: i0, t: d.secs[i0].ps, playing: true }));
+    const [st, setSt] = React.useState(() => ({ idx: MAP[i0], t: d.secs[MAP[i0]].ps, playing: true }));
     const boxRef = React.useRef(null);
     const stRef = React.useRef(st); stRef.current = st;
     React.useEffect(() => {
-      const s = stRef.current, i = Math.min(Math.max(+idx || 0, 0), N - 1);
+      const s = stRef.current, i = MAP[Math.min(Math.max(+idx || 0, 0), N - 1)];
       if (i === s.idx) return;
       // Bấm là chuyển ngay sang slide đích, rồi hiệu ứng của slide đó chạy lại từ đầu — không nối tiếp đoạn đang phát dở
       setSt({ idx: i, t: d.secs[i].ps, playing: true });

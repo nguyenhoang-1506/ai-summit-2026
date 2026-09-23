@@ -10,7 +10,7 @@ const rise = (T, s, d = 0.5, px = 24) => { const e = ez(T, s, d); return { opaci
 const win = (T, from, to, d = 0.5) => Math.min(ez(T, from, d), ez(to, T, 0.4));
 const TONE = { blue: BLUE, red: RED, green: GREEN, amber: AMBER };
 // Bố cục demo: cột trái 120..640 (caption) · vùng demo 720..2440 (timeline trên, khung dưới)
-const FRAME_H = 880, FRAME_TOP = 290, FRAME_W = 1720, DEMO_X = 720, SPLIT_W = 520, SPLIT_TOP = 820;
+const FRAME_H = 880, FRAME_TOP = 220, FRAME_W = 1720, DEMO_X = 720, SPLIT_W = 520, SPLIT_TOP = 820;
 
 // ---------- Browser chrome ----------
 function Chrome({ w, h, L, Tp, k, op, rp, children }) {
@@ -218,7 +218,7 @@ const MILES = [[100, '22:05', 'Tin nhắn', 0], [170, '22:07', 'Phân loại', 1
 function Timeline({ posF, pos, show, tone }) {
   if (show <= 0) return null;
   // Timeline nằm ngay trên khung demo (720..2440); toạ độ mốc 0..2000 co về LW
-  const W = FRAME_W, x0 = DEMO_X, y = 96, LY = 60, H = 130, LX = 150, LW = 1420, SC = LW / 2000, X = v => LX + v * SC;
+  const W = FRAME_W, x0 = DEMO_X, y = 26, LY = 60, H = 130, LX = 150, LW = 1420, SC = LW / 2000, X = v => LX + v * SC;
   const col = TONE[tone] || BLUE;
   const seg = (a, b) => <div style={{ position: 'absolute', left: X(a), width: (b - a) * SC, top: LY, height: 3, background: 'rgba(255,255,255,.16)', borderRadius: 2 }} />;
   return (
@@ -349,7 +349,7 @@ function Piece({ tweaks }) {
   ] : [];
   const caps = [
     { from: C.map1, to: C.msg, eyebrow: '5 service · một dòng dữ liệu', title: 'Từ tin nhắn đến hoá đơn điện tử, không nhập liệu lại', wide: true },
-    { from: C.msg, to: C.agent, eyebrow: 'Prospect', title: '22:05 · Khách hàng nhắn tin sau giờ mở cửa. AI trả lời ngay' },
+    { from: C.msg, to: C.agent, eyebrow: 'Prospect', title: '22:05 · Khách hàng nhắn tin sau giờ đóng cửa. AI trả lời ngay' },
     { from: C.agent, to: C.stock, eyebrow: 'Prospect · Multi-Agent', title: 'Hiểu nhu cầu từ câu đầu, cập nhật hồ sơ, bàn giao đúng agent' },
     { from: C.stock, to: C.quote, eyebrow: 'Inventory', title: 'Tồn kho thực tế trước khi tạo đơn: còn 2 sản phẩm' },
     { from: C.quote, to: C.pcard, eyebrow: 'Prospect · Cấu hình AI Agent', title: 'Doanh nghiệp quyết định AI được đọc kho nào và có được nói số tồn chính xác' },
