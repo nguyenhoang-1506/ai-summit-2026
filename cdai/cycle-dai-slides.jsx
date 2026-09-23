@@ -59,7 +59,7 @@
   }
 
   // ---------- Timeline gọn trên khung demo ----------
-  const MILES = [[0, 'Form Ads', 0], [1, 'Warm 56', 1], [12, 'Meeting', 0], [18, 'MQL 75', 1], [22, 'Pipeline', 0], [25, 'Bàn giao', 1], [55, 'Bị so giá', 0, 'red'], [72, 'Giảm 30%', 1], [76, 'CFO duyệt', 0], [84, 'Ký · Won', 1, 'green']];
+  const MILES = [[0, 'Form Ads', 0], [1, 'Warm 56', 1], [12, 'Meeting', 0], [18, 'MQL 75', 1], [22, 'Pipeline', 0], [25, 'Bàn giao', 1], [40, 'Playbook', 0], [55, 'Bị so giá', 0, 'red'], [72, 'Giảm 30%', 1], [76, 'CFO duyệt', 0], [84, 'Ký · Won', 1, 'green']];
   function Timeline({ dayF, day, show, tone }) {
     if (show <= 0) return null;
     const H = 130, LY = 64, LX = 150, LW = 1420, X = d => LX + d / 84 * LW, col = TONE[tone] || BLUE;
@@ -142,16 +142,27 @@
     return <svg width={FW} height={FH} style={{ position: 'absolute', inset: 0, zIndex: z, pointerEvents: 'none', clipPath: clip, filter: 'drop-shadow(0 0 10px rgba(255,255,255,.45))' }}>{out}</svg>;
   }
 
+  // Pháo hoa Won: bắn liên tục theo đồng hồ thật (không phụ thuộc T đang giữ khung) cho tới khi sang slide
+  function WonFireworks({ T, at }) {
+    const t0 = React.useRef(performance.now()), [now, setNow] = React.useState(0);
+    React.useEffect(() => { let raf; const tick = () => { setNow((performance.now() - t0.current) / 1000); raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick); return () => cancelAnimationFrame(raf); }, []);
+    const CYC = 3.9, k = Math.floor(now / CYC), local = now - k * CYC;
+    return <React.Fragment>
+      <Fireworks T={local} at={0} dur={CYC} count={16} seed={7 + k} area={[40, 0, 2480, 820]} scale={1.2} z={60} />
+      {k > 0 && <Fireworks T={local + CYC} at={0} dur={CYC} count={16} seed={6 + k} area={[40, 0, 2480, 820]} scale={1.2} z={60} />}
+    </React.Fragment>;
+  }
+
   // ---------- Piece ----------
-  const KEYS = { hook: 'Móc câu · Won', rew: 'Tua ngược 84 → 0', map1: 'Service Map · mở', camp: 'Ngày 0 · Campaign', warm: 'Lead · Warm 56', feed: 'Mỗi lần chạm cộng điểm', mql: 'MQL · A2 · 75', why: 'Vì sao 75 điểm', cardA: 'Service card · Lead', pipe: 'Pipeline 6 giai đoạn', deal: 'Deal · nhận bàn giao', dm: '5 người quyết định', d55: 'Ngày 55 · bị so giá', cfo: 'Phá băng · CFO duyệt', quote: 'Báo giá từ deal', review: 'Gửi duyệt nội bộ', pub: 'Approved · Published', cardC: 'Service card · Quote', sign: 'Ký → chuyển thành đơn', order: 'Đơn · lịch thu 30/70', cardD: 'Service card · Order', cop1: 'Copilot · tóm tắt 84 ngày', cop2: 'Copilot · việc còn thiếu', cardB: 'Service card · Sales', won: 'Won', lwon: 'Lead nhận kết quả Won', push: 'Push custom audience', cardE: 'Service card · Campaign', map2: 'Service Map · đầy đủ', end: 'Câu chốt' };
+  const KEYS = { hook: 'Móc câu · Won', rew: 'Tua ngược 84 → 0', map1: 'Service Map · mở', camp: 'Ngày 0 · Campaign', warm: 'Lead · Warm 56', feed: 'Mỗi lần chạm cộng điểm', mql: 'MQL · A2 · 75', why: 'Vì sao 75 điểm', cardA: 'Service card · Lead', pipe: 'Pipeline 6 giai đoạn', deal: 'Deal · nhận bàn giao', dm: '5 người quyết định', play: 'Playbook · todo tự động', pcop: 'Copilot · tóm tắt deal', d55: 'Ngày 55 · bị so giá', cfo: 'Phá băng · CFO duyệt', quote: 'Báo giá từ deal', review: 'Gửi duyệt nội bộ', pub: 'Approved · Published', cardC: 'Service card · Quote', sign: 'Ký → chuyển thành đơn', order: 'Đơn · lịch thu 30/70', cardD: 'Service card · Order', cop1: 'Copilot · tóm tắt 84 ngày', cop2: 'Copilot · việc còn thiếu', cardB: 'Service card · Sales', won: 'Won', lwon: 'Lead nhận kết quả Won', push: 'Push custom audience', cardE: 'Service card · Campaign', map2: 'Service Map · đầy đủ', end: 'Câu chốt' };
   const ORDER = Object.keys(KEYS);
-  const CHAIN_OF = { camp: 0, warm: 1, feed: 1, mql: 1, why: 1, cardA: 1, pipe: 2, deal: 2, dm: 2, d55: 2, cfo: 2, quote: 3, review: 3, pub: 3, cardC: 3, sign: 3, order: 4, cardD: 4, cop1: 2, cop2: 2, cardB: 2, won: 2, lwon: 1, push: 1, cardE: 0 };
+  const CHAIN_OF = { camp: 0, warm: 1, feed: 1, mql: 1, why: 1, cardA: 1, pipe: 2, deal: 2, dm: 2, play: 2, pcop: 2, d55: 2, cfo: 2, quote: 3, review: 3, pub: 3, cardC: 3, sign: 3, order: 4, cardD: 4, cop1: 2, cop2: 2, cardB: 2, won: 2, lwon: 1, push: 1, cardE: 0 };
 
   function CycleDaiPiece({ tweaks }) {
     const { T, CUES } = window.React.useContext(window.CompositionContext);
     const C = {}; ORDER.forEach(k => { C[k] = CUES[KEYS[k]] ?? (k === 'end' ? Infinity : NaN); });
     ORDER.slice().reverse().forEach((k, i, arr) => { if (Number.isNaN(C[k])) C[k] = i === 0 ? Infinity : C[arr[i - 1]]; });
-    const L = window.DaiLead || {}, S = window.DaiSales || {}, M = window.DaiCommerce || {};
+    const L = window.DaiLead || {}, S = window.DaiSales || {}, M = window.DaiCommerce || {}, PB = window.DaiPlaybook || {};
     const ready = L.LeadScreen && S.DealScreen && M.OrderScreen;
     const next = (k) => C[ORDER[ORDER.indexOf(k) + 1]];
     const caps = [
@@ -164,6 +175,8 @@
       ['pipe', { eyebrow: 'Sales Pipeline', title: 'SQL → SAL → Báo giá → Ký hợp đồng', sub: 'Sales nhận lead đã qualify và đưa deal qua 6 giai đoạn.' }],
       ['deal', { eyebrow: 'Sales Pipeline', title: 'Nhận bàn giao, không hỏi lại từ đầu', sub: 'Nhu cầu, số lượng, nguồn lead đã có sẵn trong deal.' }],
       ['dm', { eyebrow: 'Sales Pipeline', title: '5 người quyết định', sub: 'Deal B2B cần biết ai đề xuất, ai so giá, ai duyệt chi, ai ký.' }],
+      ['play', { eyebrow: 'Sales Pipeline · Playbook', title: 'Cycle dài, Sales không phải đoán việc tiếp theo', sub: 'Dựa trên giá trị, giai đoạn và người quyết định, playbook tự sinh todo theo kịch bản đã thiết lập.' }],
+      ['pcop', { eyebrow: 'Sales Pipeline · AI Copilot', title: 'Hỏi một câu, thấy cả deal', sub: 'Copilot tóm tắt người quyết định, rủi ro và việc cần làm tiếp.' }],
       ['d55', { eyebrow: 'Deal đứng 21 ngày ở Báo giá', title: 'Ngày 55: bị so giá, Jasmine đắt nhất', sub: 'Báo giá lần 1: 1,7 tỷ, cao hơn 2 nhà cung cấp khác khoảng 18%.', tone: 'red' }],
       ['cfo', { eyebrow: 'Sales Pipeline', title: 'Phá băng bằng dữ liệu', sub: 'Giảm 30% có người duyệt. CFO đồng ý 1,19 tỷ, thanh toán 30/70.' }],
       ['quote', { eyebrow: 'Quote Service', title: 'Báo giá sinh ra từ deal', sub: 'Sản phẩm, số lượng, chiết khấu có sẵn. Tổng tự tính.' }],
@@ -172,13 +185,13 @@
       ['sign', { eyebrow: 'Quote → Order Service', title: 'Ký là có đơn', sub: 'Khách chấp nhận và ký, báo giá chuyển thành đơn hàng.' }],
       ['order', { eyebrow: 'Order Service', title: 'Đơn hàng có sẵn lịch thu 30/70', sub: 'Cọc 357 triệu sau ký, 833 triệu sau nghiệm thu.' }],
       ['cop1', { eyebrow: 'Sales Pipeline · AI Copilot', title: 'Hỏi một câu, thấy cả 84 ngày', sub: 'Copilot đọc toàn bộ lịch sử deal và tóm tắt theo từng giai đoạn.' }],
-      ['cop2', { eyebrow: 'Sales Pipeline · AI Copilot', title: 'Biết ai ký, biết việc gì còn thiếu', sub: 'Ba việc tiếp theo, mỗi việc có người phụ trách và hạn.' }],
+      ['cop2', { eyebrow: 'Sales Pipeline · AI Copilot', title: 'AI Copilot tóm tắt 84 ngày', sub: 'Ba việc tiếp theo, mỗi việc có người phụ trách và hạn.' }],
       ['won', { eyebrow: 'Sales Pipeline · Ngày 84', title: 'Won', sub: '18/09/2026 · ký hợp đồng 1,19 tỷ · nhận cọc 30%.', tone: 'green', big: true }],
       ['lwon', { eyebrow: 'Sales → Lead Service', title: 'Lead biết mình thành doanh thu', sub: 'Kết quả Won ghi ngược về lead gốc và chiến dịch gốc.', tone: 'green' }],
       ['push', { eyebrow: 'Lead Service → Campaign', title: 'Quảng cáo học từ khách thật', sub: 'Tệp khách Won gửi lên Meta làm mẫu để tìm khách tương tự.', tone: 'amber' }],
       ['map2', { eyebrow: 'Service Map', title: 'Năm service, một dòng dữ liệu, một vòng lặp', wide: true }],
     ];
-    const dayMap = [[C.camp, 0], [C.warm, 1], [C.feed, 12], [C.mql, 18], [C.pipe, 22], [C.deal, 25], [C.d55, 55], [C.cfo, 72], [C.review, 76], [C.sign, 84]];
+    const dayMap = [[C.camp, 0], [C.warm, 1], [C.feed, 12], [C.mql, 18], [C.pipe, 22], [C.deal, 25], [C.play, 40], [C.d55, 55], [C.cfo, 72], [C.review, 76], [C.sign, 84]];
     let day = 0, dayF = 0, prevD = 0; dayMap.forEach(([t, d]) => { if (T >= t) { day = d; dayF = lerp(prevD, d, ez(T, t, 1.1)); prevD = d; } });
     const showTL = Math.min(ez(T, C.camp + 0.3, 0.7), ez(C.map2, T, 0.5));
     let curKey = ORDER[0]; ORDER.forEach(k => { if (T >= C[k]) curKey = k; });
@@ -197,7 +210,10 @@
           <L.CampaignScreen T={T} from={C.camp} to={C.warm} at={C.camp} />
           <L.LeadScreen T={T} from={C.warm} to={C.pipe} C={C} />
           <S.PipelineScreen T={T} from={C.pipe} to={C.deal} at={C.pipe} />
-          <S.DealScreen T={T} from={C.deal} to={C.quote} C={C} phase="journey" />
+          <S.DealScreen T={T} from={C.deal} to={C.play} C={C} phase="journey" />
+          {PB.PlaybookScreen && <PB.PlaybookScreen T={T} from={C.play} to={C.pcop} at={C.play} C={C} />}
+          {PB.CopilotDealScreen && <PB.CopilotDealScreen T={T} from={C.pcop} to={C.d55} at={C.pcop} C={C} />}
+          <S.DealScreen T={T} from={C.d55} to={C.quote} C={C} phase="journey" />
           <M.QuoteModalScreen T={T} from={C.quote} to={C.pub} C={C} />
           <M.QuoteScreen T={T} from={C.pub} to={C.order} C={C} />
           <M.OrderScreen T={T} from={C.order} to={C.cop1} C={C} />
@@ -219,7 +235,7 @@
         </div>}
 
         <Fireworks T={T} at={C.hook + 1.3} dur={5.4} count={10} seed={3} area={[820, 330, 1520, 380]} scale={0.8} floor={1210} clip="inset(330px 120px 70px 720px round 0 0 16px 16px)" />
-        <Fireworks T={T} at={C.won + 3.9} dur={3.9} count={26} seed={7} area={[40, 0, 2480, 820]} scale={1.25} z={60} />
+        {T >= C.won + 3.9 && T < C.lwon + 0.5 && <WonFireworks T={T} at={C.won + 3.9} />}
         <ServiceMap T={T} at={C.map1} out={C.camp} />
         <ServiceMap T={T} at={C.map2} full out={C.end} />
         {[['cardA', 'A'], ['cardB', 'B'], ['cardC', 'C'], ['cardD', 'D'], ['cardE', 'E', 'amber']].map(([k, id, t]) => <ServiceCard key={k} T={T} at={C[k] + 0.3} to={next(k)} id={id} tone={t} />)}

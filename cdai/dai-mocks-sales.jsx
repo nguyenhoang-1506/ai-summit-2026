@@ -67,7 +67,7 @@
     </div>;
   }
 
-  function DealScreen({ T, from, to, C, phase }) {
+  function DealScreen({ T, from, to, C, phase, work, panel }) {
     const hook = phase === 'hook', close = phase === 'close' || hook;
     const tD = C.deal, tDM = C.dm, t55 = C.d55, tCFO = C.cfo, tC1 = C.cop1, tC2 = C.cop2, tW = C.won;
     const wonT = hook ? -1e9 : tW + 4.0;
@@ -124,7 +124,7 @@
           <Card st={{ padding: '10px 14px', gap: 8 }}><span style={{ display: 'flex', gap: 18 }}>{['Note', 'Email', 'Call', 'Meeting', 'Quote', 'Order'].map(l => <Tx key={l} s={12.5} c="#344054">▢ {l}</Tx>)}</span><Hr /><span style={{ display: 'flex', gap: 8, alignItems: 'center' }}><Av t="NH" s={22} bg="#D1E9FF" /><Tx s={12.5} c="#98A2B3">Add a note, send an email, log a call...</Tx></span></Card>
           <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>{['All', 'Note 8', 'Email 9', 'Call 5', 'Meeting 6', 'More ⌄'].map((l, i) => <Pill key={l} c={i === 0 ? PRI : '#344054'} bg={i === 0 ? '#EEF4FF' : '#fff'} b={i === 0 ? '#B2DDFF' : '#EAECF0'}>{l}</Pill>)}<Sp /><Tx s={11.5} c="#667085">Most recent ⌄</Tx></span>
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            {close ? <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {work ? work : close ? <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'flex', gap: 12 }}><span style={{ width: 26, flex: 'none' }} /><div style={{ flex: 1, background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: 8, padding: '8px 14px', display: 'flex' }}><Tx s={12} c="#344054">{isWon ? 'Ký hợp đồng và đặt cọc → Won' : 'Báo giá → Ký hợp đồng và đặt cọc'}</Tx><Sp /><Tx s={11} c="#667085">Nguyễn Hoàng  09:35 Sep 21 2026</Tx></div></div>
               <FeedItem k="order" title="Việt Phúc – 200 bộ Lucky Clover quà Tết 2027" tag="ORDER" sub="JJDS-0006 · Công ty CP Dược phẩm Việt Phúc · 1.190.000.000 ₫" badge="Confirmed" meta="09:33 Sep 21 2026 · via Đơn sỉ & cộng tác viên Jasmine" />
               <FeedItem k="quote" title="Việt Phúc – 200 bộ Lucky Clover quà Tết 2027" tag="QUOTE" sub="JJBG-0006 · Công ty CP Dược phẩm Việt Phúc · 1.190.000.000 ₫ · expires 21 thg 10, 2026" badge="Accepted" badgeC={OKD} meta="09:26 Sep 21 2026 · via Báo giá quà tặng doanh nghiệp"><span style={{ display: 'flex', gap: 6 }}><Pill>Approved</Pill><Pill c={OKD} bg="#ECFDF3">Signed</Pill></span></FeedItem>
@@ -169,6 +169,7 @@
         <Tx s={30} w={800} c="#079455" st={{ fontVariantNumeric: 'tabular-nums' }}>{vnd(cgV)}</Tx>
         <P s={13} c="#344054" st={{ textAlign: 'center' }}>Việt Phúc – 200 bộ Lucky Clover quà Tết 2027 is closed as won.</P><Hr st={{ alignSelf: 'stretch' }} /><Tx s={11.5} c="#667085">Nice work, Nguyễn Hoàng — keep the streak going.</Tx>
       </div>}
+      {panel}
     </Screen>;
   }
   // Feed hành trình deal: mỗi slide thả thêm nhóm hoạt động mới lên đầu
