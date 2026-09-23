@@ -199,10 +199,10 @@ function Pending({ T, from, to, code, title, quote, who, tone = 'blue' }) {
 }
 
 // ---------- Caption ----------
-function Caption({ T, from, to, eyebrow, title, tone = 'blue', big, wide }) {
+function Caption({ T, from, to, eyebrow, title, tone = 'blue', big, wide, top }) {
   if (T < from || T > to) return null;
   const col = TONE[tone];
-  const box = wide ? { left: 120, top: 250, width: 1800 } : { left: 120, top: FRAME_TOP, width: SPLIT_W };
+  const box = wide ? { left: 120, top: top ?? 250, width: 1800 } : { left: 120, top: FRAME_TOP, width: SPLIT_W };
   return (
     <div style={{ position: 'absolute', ...box, display: 'flex', flexDirection: 'column', gap: wide ? 10 : 20, opacity: win(T, from, to), transform: `translateY(${(1 - ez(T, from, 0.5)) * 20}px)` }}>
       {eyebrow && <span style={{ display: 'flex', alignItems: 'flex-start', gap: 14, font: `500 ${wide ? 28 : 22}px/1.3 ${MONO}`, letterSpacing: 2, textTransform: 'uppercase', color: col }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: col, flex: 'none', marginTop: wide ? 13 : 9 }} />{eyebrow}</span>}
@@ -276,21 +276,26 @@ const EDGES = ['đơn hàng từ hội thoại', 'giữ hàng · xuất kho', 'C
 const PLATFORM = ['Service registry', 'Custom fields', 'Reservation 48h', 'Payment ledger', 'Delivery ledger', 'E-invoice', 'Copilot mỗi service'];
 function ServiceMap({ T, at, full, out }) {
   if (T < at) return null;
-  const NW = 350, NH = 220, GAP = 150, X0 = (FW - 5 * NW - 4 * GAP) / 2, Y = 480, cx = i => X0 + i * (NW + GAP);
+  const NW = 350, NH = full ? 150 : 220, GAP = 150, X0 = (FW - 5 * NW - 4 * GAP) / 2, Y = full ? 400 : 480, cx = i => X0 + i * (NW + GAP);
+  const SY = 590, svcP = full ? ez(T, at + 1.0, 0.6) : 0;
+  const W0 = at + 2.0, WS = 1.1, NE = EDGES.length;
+  const step = full ? Math.floor((T - W0) / WS) : -1; // cạnh đang focus (0..NE-1)
+  const walking = full && T >= W0 && step < NE, done = full && step >= NE;
+  const appDim = full ? 1 - 0.55 * ez(T, at + 1.4, 0.6) : 1;
   const op = out ? ez(out, T, 0.5) : 1;
-  const loopP = full ? ez(T, at + 1.2, 1.8) : 0, platP = full ? ez(T, at + 3.4, 0.8) : 0, tagP = full ? ez(T, at + 4.6, 0.6) : 0;
-  const mid = i => cx(i) + NW / 2, yb = Y + NH, yl = yb + 140, yt = Y - 84;
-  const loop = `M ${mid(1)} ${yb} L ${mid(1)} ${yl} L ${mid(0)} ${yl} L ${mid(0)} ${yb}`;
+  const loopP = 0, platP = full ? ez(T, at + 3.4, 0.8) : 0, tagP = full ? ez(T, at + 4.6, 0.6) : 0;
+  const mid = i => cx(i) + NW / 2, yb = Y + NH, yl = full ? Y - 64 : yb + 140, yt = full ? Y - 64 : Y - 84;
+  const loop = full ? `M ${mid(1)} ${Y} L ${mid(1)} ${yl} L ${mid(0)} ${yl} L ${mid(0)} ${Y}` : `M ${mid(1)} ${yb} L ${mid(1)} ${yl} L ${mid(0)} ${yl} L ${mid(0)} ${yb}`;
   const loop2 = `M ${mid(4)} ${Y} L ${mid(4)} ${yt} L ${mid(2)} ${yt} L ${mid(2)} ${Y}`;
   return (
     <div style={{ position: 'absolute', inset: 0, opacity: op }}>
-      <svg style={{ position: 'absolute', inset: 0 }} width={FW} height={FH}>
+      <svg style={{ position: 'absolute', inset: 0, opacity: appDim }} width={FW} height={FH}>
         {EDGES.map((e, i) => { const t0 = full ? at + 0.2 + i * 0.12 : at + 0.9 + i * 0.7, p = ez(T, t0, 0.6); if (p <= 0) return null; const x1 = cx(i) + NW, x2 = cx(i + 1), y = Y + NH / 2, xm = (x1 + x2) / 2; return (
           <g key={i}><line x1={x1} y1={y} x2={x1 + (x2 - x1) * p} y2={y} stroke="rgba(255,255,255,.35)" strokeWidth="3" />{p >= 1 && <polygon points={`${x2 - 14},${y - 9} ${x2},${y} ${x2 - 14},${y + 9}`} fill={BLUE} />}
-            <g opacity={ez(T, t0 + 0.4, 0.4)}><rect x={xm - 100} y={Y + NH + 24} width="200" height="38" rx="19" fill="rgba(6,21,48,.85)" stroke="rgba(255,255,255,.30)" /><text x={xm} y={Y + NH + 50} textAnchor="middle" fill="#fff" style={{ font: `500 18px ${AF}` }}>{e}</text></g></g>); })}
+            <g opacity={full ? 0 : ez(T, t0 + 0.4, 0.4)}><rect x={xm - 100} y={Y + NH + (full ? 14 : 24)} width="200" height="38" rx="19" fill="rgba(6,21,48,.85)" stroke="rgba(255,255,255,.30)" /><text x={xm} y={Y + NH + (full ? 40 : 50)} textAnchor="middle" fill="#fff" style={{ font: `500 18px ${AF}` }}>{e}</text></g></g>); })}
         {loopP > 0 && <g>
           <path d={loop} fill="none" stroke={AMBER} strokeWidth="3.5" pathLength="1" style={{ strokeDasharray: `${loopP} 1` }} />
-          {loopP >= 1 && <polygon points={`${mid(0) - 9},${yb + 14} ${mid(0)},${yb} ${mid(0) + 9},${yb + 14}`} fill={AMBER} />}
+          {loopP >= 1 && (full ? <polygon points={`${mid(0) - 9},${Y - 14} ${mid(0)},${Y} ${mid(0) + 9},${Y - 14}`} fill={AMBER} /> : <polygon points={`${mid(0) - 9},${yb + 14} ${mid(0)},${yb} ${mid(0) + 9},${yb + 14}`} fill={AMBER} />)}
           <g opacity={ez(T, at + 1.9, 0.4)}><rect x={(mid(0) + mid(1)) / 2 - 160} y={yl - 20} width="320" height="40" rx="20" fill="rgba(6,21,48,.9)" stroke={AMBER} /><text x={(mid(0) + mid(1)) / 2} y={yl + 7} textAnchor="middle" fill={AMBER} style={{ font: `600 20px ${AF}` }}>tiến độ giao hàng → thông báo cho khách</text></g>
           <path d={loop2} fill="none" stroke={AMBER} strokeWidth="3.5" pathLength="1" style={{ strokeDasharray: `${ez(T, at + 2.4, 1.4)} 1` }} />
           {ez(T, at + 2.4, 1.4) >= 1 && <polygon points={`${mid(2) - 9},${Y - 14} ${mid(2)},${Y} ${mid(2) + 9},${Y - 14}`} fill={AMBER} />}
@@ -298,15 +303,41 @@ function ServiceMap({ T, at, full, out }) {
         </g>}
       </svg>
       {NODES.map(([ic, n, s], i) => { const t0 = full ? at + 0.1 + i * 0.08 : at + 0.5 + i * 0.7; return (
+        full ? <div key={n} style={{ position: 'absolute', left: cx(i), top: Y, width: NW, height: NH, opacity: appDim, borderRadius: 24, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.14)', boxShadow: '0 20px 50px rgba(0,0,0,.35)', padding: '0 28px', display: 'flex', alignItems: 'center', gap: 18, ...rise(T, t0, 0.5, 24) }}>
+          <img src={`assets/app-icons/${ic}.svg`} alt="" style={{ width: 52, height: 52, borderRadius: 12, flex: 'none' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}><span style={{ font: `700 34px/1.1 ${AF}`, color: '#fff' }}>{n}</span><span style={{ font: `400 20px/1.25 ${AF}`, color: INK2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s}</span></div>
+        </div> :
         <div key={n} style={{ position: 'absolute', left: cx(i), top: Y, width: NW, height: NH, borderRadius: 24, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.14)', boxShadow: '0 20px 50px rgba(0,0,0,.35)', padding: '26px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12, ...rise(T, t0, 0.5, 24) }}>
           <img src={`assets/app-icons/${ic}.svg`} alt="" style={{ width: 56, height: 56, borderRadius: 12 }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}><span style={{ font: `700 38px/1.1 ${AF}`, color: '#fff' }}>{n}</span><span style={{ font: `400 22px/1.25 ${AF}`, color: INK2 }}>{s}</span></div>
         </div>); })}
-      {full && <div style={{ position: 'absolute', left: 120, right: 120, top: 910, opacity: platP, transform: `translateY(${(1 - platP) * 20}px)` }}>
+      {full && <svg style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} width={FW} height={FH}>
+        {NODES.map((_, i) => { const p = ez(T, at + 1.0 + i * 0.1, 0.5); return <line key={i} x1={mid(i)} y1={Y + NH} x2={mid(i)} y2={Y + NH + (SY - Y - NH) * p} stroke="rgba(255,255,255,.22)" strokeWidth="2" strokeDasharray="4 8" opacity={appDim} />; })}
+        {EDGES.map((_, i) => { const p = ez(T, W0 + i * WS, 0.6); if (p <= 0) return null; const x1 = cx(i) + NW + 6, x2 = cx(i + 1) - 6, y = SY + 190, cur = walking && step === i; return <g key={i}>
+          <line x1={x1} y1={y} x2={x1 + (x2 - x1) * p} y2={y} stroke={cur ? '#fff' : BLUE} strokeWidth={cur ? 5 : 4} />
+          {p >= 1 && <polygon points={`${x2 - 16},${y - 11} ${x2},${y} ${x2 - 16},${y + 11}`} fill={cur ? '#fff' : BLUE} />}
+          {done && <circle r="7" fill="#fff" cy={y} cx={x1 + (x2 - x1) * (((T - W0 - NE * WS) * 0.6 + i * 0.25) % 1)} opacity=".9" />}
+        </g>; })}
+      </svg>}
+      {full && NODES.map(([ic, n], i) => { const t0 = at + 1.1 + i * 0.1;
+        const lit = done || (walking && (step === i || step + 1 === i)) || (!walking && !done);
+        const on = done || (walking && step >= i - 1);
+        return (
+        <div key={'s' + n} style={{ position: 'absolute', left: cx(i), top: SY, width: NW, borderRadius: 24, background: on ? 'rgba(169,214,255,.10)' : 'rgba(255,255,255,.05)', border: `1.5px solid ${lit && on ? BLUE : 'rgba(255,255,255,.18)'}`, boxShadow: lit && on ? '0 20px 50px rgba(0,0,0,.35), 0 0 48px rgba(169,214,255,.30)' : '0 20px 50px rgba(0,0,0,.35)', opacity: lit ? 1 : 0.45, transition: 'opacity .3s, border-color .3s, box-shadow .3s, background .3s', padding: '22px 26px 24px', display: 'flex', flexDirection: 'column', gap: 14, ...rise(T, t0, 0.5, 20) }}>
+          <span style={{ font: `700 36px/1.1 ${AF}`, color: '#fff' }}>{n} Service</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{LAYERS.map((l, j) => <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '7px 14px', borderRadius: 12, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.14)', ...rise(T, t0 + 0.2 + j * 0.06, 0.4, 10) }}><span style={{ font: `500 18px ${MONO}`, color: BLUE }}>{String(j + 1).padStart(2, '0')}</span><span style={{ font: `500 22px ${AF}`, color: INK2 }}>{l}</span></div>)}</div>
+        </div>); })}
+      {full && T >= W0 && <div style={{ position: 'absolute', left: 0, right: 0, top: SY + 400, display: 'flex', justifyContent: 'center' }}>
+        {EDGES.map((e, i) => { const show = walking && step === i; return <div key={i} style={{ position: 'absolute', display: 'flex', alignItems: 'center', gap: 18, padding: '14px 32px', borderRadius: 999, background: 'rgba(6,17,48,.75)', border: '1px solid rgba(169,214,255,.45)', opacity: show ? 1 : 0, transform: `translateY(${show ? 0 : 10}px)`, transition: 'opacity .3s, transform .3s', whiteSpace: 'nowrap' }}>
+          <span style={{ font: `700 30px ${AF}`, color: '#fff' }}>{NODES[i][1]}</span><span style={{ font: `500 30px ${AF}`, color: BLUE }}>→</span><span style={{ font: `700 30px ${AF}`, color: '#fff' }}>{NODES[i + 1][1]}</span>
+          <span style={{ width: 2, height: 28, background: 'rgba(255,255,255,.25)' }} /><span style={{ font: `400 28px ${AF}`, color: INK2 }}>{e}</span></div>; })}
+        <div style={{ font: `600 30px ${AF}`, color: '#fff', opacity: done ? 1 : 0, transition: 'opacity .4s' }}>Output của service trước là input của service sau</div>
+      </div>}
+      {false && <div style={{ position: 'absolute', left: 120, right: 120, top: 910, opacity: platP, transform: `translateY(${(1 - platP) * 20}px)` }}>
         <div style={{ font: `500 24px ${MONO}`, letterSpacing: 2, color: INK3, marginBottom: 18 }}>TẦNG NỀN TẢNG · CÁC MÔ HÌNH THỐNG NHẤT</div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>{PLATFORM.map((p, i) => <span key={p} style={{ padding: '12px 26px', borderRadius: 999, border: '1px solid rgba(255,255,255,.30)', background: 'rgba(6,21,48,.5)', font: `500 26px ${AF}`, color: INK2, whiteSpace: 'nowrap', ...rise(T, at + 3.5 + i * 0.08, 0.4, 12) }}>{p}</span>)}</div>
       </div>}
-      {full && <div style={{ position: 'absolute', left: 120, right: 120, top: 1070, whiteSpace: 'nowrap', font: `700 64px/1.15 ${AF}`, color: '#fff', opacity: tagP, transform: `translateY(${(1 - tagP) * 20}px)` }}>Năm service, một dòng dữ liệu. <span style={{ color: AMBER }}>Không nhập liệu lại.</span></div>}
+      {false && <div style={{ position: 'absolute', left: 120, right: 120, top: 1100, whiteSpace: 'nowrap', font: `700 52px/1.15 ${AF}`, color: '#fff', opacity: tagP, transform: `translateY(${(1 - tagP) * 20}px)` }}>Năm service, một dòng dữ liệu. <span style={{ color: AMBER }}>Không nhập liệu lại.</span></div>}
     </div>
   );
 }
@@ -344,8 +375,6 @@ function Piece({ tweaks }) {
     [M.NewInvoiceScreen, { from: C.inv, to: C.einv, at: C.inv + 0.4 }],
     [M.InvoiceDocScreen, { from: C.einv, to: C.full, at: C.einv + 0.4 }],
     [M.CompletedScreen, { from: C.full, to: C.copilot, at: C.full + 0.6 }],
-    [M.StockAfterScreen, { from: C.copilot, to: C.copilot + 3, at: C.copilot + 0.4 }],
-    [M.CopilotScreen, { from: C.copilot + 3, to: C.map2, at: C.copilot + 3.4 }],
   ] : [];
   const caps = [
     { from: C.map1, to: C.msg, eyebrow: '5 service · một dòng dữ liệu', title: 'Từ tin nhắn đến hoá đơn điện tử, không nhập liệu lại', wide: true },
@@ -369,10 +398,9 @@ function Piece({ tweaks }) {
     { from: C.inv, to: C.einv, eyebrow: 'Invoice Service', title: 'Hoá đơn tạo từ đơn hàng, tiền đã thu tự động đối trừ' },
     { from: C.einv, to: C.full, eyebrow: 'Invoice Service', title: 'Hoá đơn điện tử đã phát hành, đã khớp thanh toán' },
     { from: C.full, to: C.copilot, eyebrow: 'Đủ hàng · đủ tiền · đủ chứng từ', title: 'Hoàn tất', tone: 'green', big: true },
-    { from: C.copilot, to: C.map2, eyebrow: 'Inventory · Copilot', title: 'Tồn kho tự cập nhật. Copilot đề xuất bổ sung hàng', tone: 'amber' },
-    { from: C.map2, to: C.end, eyebrow: 'Service Map', title: 'Năm service, một dòng dữ liệu, hai vòng phản hồi khép kín', wide: true },
+    { from: C.map2, to: C.end, eyebrow: 'Service Map', title: 'Năm service nối tiếp nhau, một dòng dữ liệu', wide: true, top: 90 },
   ];
-  const posMap = [[C.msg, 100], [C.agent, 170], [C.quote, 250], [C.confirm, 340], [C.conf, 440], [C.hold, 600], [C.ship, 815], [C.deliv, 1082], [C.cod, 1770], [C.full, 1847], [C.copilot, 1923]];
+  const posMap = [[C.msg, 100], [C.agent, 170], [C.quote, 250], [C.confirm, 340], [C.conf, 440], [C.hold, 600], [C.ship, 815], [C.deliv, 1082], [C.cod, 1770], [C.full, 1847]];
   let pos = 0, posF = 0, prevP = 0; posMap.forEach(([t, p]) => { if (T >= t) { pos = p; posF = lerp(prevP, p, ez(T, t, 1.1)); prevP = p; } });
   const showTL = Math.min(ez(T, C.msg + 0.3, 0.7), ez(C.map2, T, 0.5));
   const tone = (T >= C.deliv && T < C.gap) || (T >= C.paid && T < C.inv) || (T >= C.full && T < C.copilot) ? 'green' : T >= C.gap && T < C.cod ? 'red' : T >= C.copilot && T < C.map2 ? 'amber' : 'blue';
